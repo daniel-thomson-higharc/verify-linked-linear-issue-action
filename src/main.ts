@@ -13,12 +13,13 @@ export async function run(): Promise<void> {
     // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
     core.debug(`Searching for Linear ticket link ...`)
 
-    if (!context.payload.pull_request?.number) {
-      throw new Error('No pull request number found in context, exiting.')
+    if (!context.payload.pull_request?.number && !process.env.PR_NUMBER) {
+      throw new Error('No pull request number found in context or PR_NUMBER environment variable, exiting.');
     }
-
+    
+    const prNumber = context.payload.pull_request?.number || process.env.PR_NUMBER;
     const comments = await octokit.rest.issues.listComments({
-      issue_number: context.payload.pull_request?.number,
+      issue_number: prNumber,
       owner: context.repo.owner,
       repo: context.repo.repo
     })
