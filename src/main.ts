@@ -17,7 +17,14 @@ export async function run(): Promise<void> {
       throw new Error('No pull request number found in context or PR_NUMBER environment variable, exiting.');
     }
     
-    const prNumber = context.payload.pull_request?.number || process.env.PR_NUMBER;
+    // Convert PR_NUMBER to a number if it's available as an environment variable
+    const prNumber = context.payload.pull_request?.number || 
+                 (process.env.PR_NUMBER ? parseInt(process.env.PR_NUMBER, 10) : undefined);
+
+    if (typeof prNumber !== 'number' || isNaN(prNumber)) {
+      throw new Error('Invalid PR number, exiting.');
+    }
+
     const comments = await octokit.rest.issues.listComments({
       issue_number: prNumber,
       owner: context.repo.owner,
